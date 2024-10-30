@@ -1,7 +1,5 @@
 import math_lib
 
-placeholders = {}
-
 def main():
     try:
         with open("program.oll", "r") as file:
@@ -14,10 +12,9 @@ def process_lines(lines):
     i = 0
     while i < len(lines):
         line = lines[i].strip()
-        if line.startswith("jika"):
-            i = handle_conditional(line, lines, i)
-        elif line.startswith("selama"):
-            i = handle_loop(line, lines, i)
+        if not line or line.startswith("#"):
+            i += 1
+            continue
         else:
             process_command(line)
             i += 1
@@ -30,88 +27,40 @@ def process_command(command):
 
     action = parts[0].lower()
     if action == "konversi":
-        if len(parts) != 2:
-            print("Format perintah tidak valid. Gunakan: konversi <angka> dari <basis> ke <basis>")
-            return
         handle_conversion(parts[1])
     elif action == "baca":
-        if len(parts) != 2:
-            print("Format perintah tidak valid. Gunakan: baca <placeholder>")
-            return
-        handle_baca(parts[1])
+        handle_print(parts[1])
     elif action == "berhenti":
         print("Interpreter berhenti.")
         exit()
     elif action in ["tambah", "kurang", "kali", "bagi", "pangkat", "akar"]:
-        if len(parts) != 2:
-            print(f"Format perintah tidak valid. Gunakan: {action} <angka1> <angka2>")
-            return
         handle_math(action, parts[1])
     else:
         print("Perintah tidak dikenal.")
 
-def handle_conditional(line, lines, i):
-    parts = line.split(maxsplit=2)
-    if len(parts) != 3 or parts[2] != "maka":
-        print("Format perintah tidak valid. Gunakan: jika <kondisi> maka <perintah>")
-        return i + 1
-
-    condition = parts[1]
-    if eval(condition, {}, placeholders):
-        process_command(lines[i + 1].strip())
-    return i + 2
-
-def handle_loop(line, lines, i):
-    parts = line.split(maxsplit=2)
-    if len(parts) != 3 or parts[2] != "lakukan":
-        print("Format perintah tidak valid. Gunakan: selama <kondisi> lakukan <perintah>")
-        return i + 1
-
-    condition = parts[1]
-    loop_start = i + 1
-    while eval(condition, {}, placeholders):
-        process_command(lines[loop_start].strip())
-    return loop_start + 1
-
 def handle_conversion(command):
     parts = command.split()
-    if len(parts) != 5:
-        print("Format perintah tidak valid. Gunakan: konversi <angka> dari <basis> ke <basis>")
-        return
-
     number, _, input_base, _, output_base = parts
     try:
-        decimal_number = to_decimal(number, input_base)
-        placeholders[number] = (decimal_number, input_base)
+        decimal_number = math_lib.decimal(number, input_base)
         if output_base.lower() == "desimal":
             print(f"Desimal: {decimal_number}")
         elif output_base.lower() == "biner":
-            print(f"Biner: {to_binary(decimal_number)}")
+            print(f"Biner: {math_lib.binary(decimal_number)}")
         elif output_base.lower() == "oktal":
-            print(f"Oktal: {to_octal(decimal_number)}")
+            print(f"Oktal: {math_lib.octal(decimal_number)}")
         elif output_base.lower() == "heksadesimal":
-            print(f"Heksadesimal: {to_hexadecimal(decimal_number)}")
+            print(f"Heksadesimal: {math_lib.hexadecimal(decimal_number)}")
         else:
             print("Basis output tidak dikenal.")
     except ValueError:
         print("Angka atau basis tidak valid.")
 
-def handle_baca(expression):
-    try:
-        # Attempt to evaluate the expression as a Python expression
-        value = eval(expression, {}, placeholders)
-        print(value)
-    except NameError:
-        print(f"Placeholder '{expression}' tidak ditemukan.")
-    except SyntaxError:
-        print(f"Format placeholder '{expression}' tidak valid.")
+def handle_print(expression):
+    print(expression)
 
 def handle_math(action, command):
     parts = command.split()
-    if len(parts) < 1 or (action != "akar" and len(parts) != 2):
-        print(f"Format perintah tidak valid. Gunakan: {action} <angka1> <angka2>")
-        return
-
     try:
         if action == "akar":
             a = float(parts[0])
@@ -132,19 +81,6 @@ def handle_math(action, command):
         print(result)
     except ValueError:
         print("Angka tidak valid.")
-
-def to_decimal(number, base):
-    bases = {"biner": 2, "desimal": 10, "oktal": 8, "heksadesimal": 16}
-    return int(number, bases[base.lower()])
-
-def to_binary(number):
-    return bin(number)[2:]  # Menghapus prefix '0b'
-
-def to_octal(number):
-    return oct(number)[2:]  # Menghapus prefix '0o'
-
-def to_hexadecimal(number):
-    return hex(number)[2:]  # Menghapus prefix '0x'
 
 if __name__ == "__main__":
     main()

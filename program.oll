@@ -1,4 +1,10 @@
+# konversi "NOMOR" dari "TIPE" ke "TIPE AKHIR"
+# "OPERASSI MATEMATIKA" "angka 1" "angka 2"
+#"BACA" "NILAI"
+# berhenti untuk berhenti
+
 konversi 1010 dari biner ke desimal
+konversi 1010 dari oktal ke biner
 baca 1010
 tambah 5 3
 kurang 10 4
